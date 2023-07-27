@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"net"
+	"os"
 )
 
 type Client struct {
@@ -60,6 +62,19 @@ func init() {
 	flag.IntVar(&serverPort, "port", 8888, "设置服务器端口,默认8888")
 }
 
+func (c *Client) UpdateName() bool {
+	fmt.Println("请输入用户名")
+	fmt.Scanln(&c.Name)
+
+	sendMsg := "rename|" + c.Name + "\n"
+	_, err := c.conn.Write([]byte(sendMsg))
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	return true
+}
+
 func (c *Client) Run() {
 	for c.flag != 0 {
 		for c.Menu() != true {
@@ -69,16 +84,22 @@ func (c *Client) Run() {
 		//根据不同的模式处理不同的业务
 		switch c.flag {
 		case 1:
-			fmt.Println("公聊模式选择")
+			fmt.Println(">>>>>>>>公聊模式选择<<<<<<<<")
 			break
 		case 2:
-			fmt.Println("私聊模式选择")
+			fmt.Println(">>>>>>>>>私聊模式选择<<<<<<<<<")
 			break
 		case 3:
-			fmt.Println("更改用户名选择")
+			fmt.Println(">>>>>>>更改用户名选择<<<<<")
+			c.UpdateName()
 			break
 		}
 	}
+}
+
+func (c *Client) DealResponse() {
+	//一旦conn有数据，就直接copy到stdout标准输出中，永久阻塞监听
+	io.Copy(os.Stdout, c.conn)
 }
 
 func main() {
@@ -86,11 +107,14 @@ func main() {
 	flag.Parse()
 	client := NewClient(serverIp, serverPort)
 	if client == nil {
-		fmt.Println("服务器链接失败")
+		fmt.Println("服务器链接失败>>>>>>>>>>>")
 		return
 	}
 
-	fmt.Println("服务器链接成功")
+	//单独开启一个goroutine去处理server的回执消息
+	go client.DealResponse()
+
+	fmt.Println("服务器链接成功>>>>>>>>>>>>")
 
 	client.Run()
 }
