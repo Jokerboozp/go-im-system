@@ -84,6 +84,7 @@ func (c *Client) Run() {
 		//根据不同的模式处理不同的业务
 		switch c.flag {
 		case 1:
+			c.PublicChat()
 			fmt.Println(">>>>>>>>公聊模式选择<<<<<<<<")
 			break
 		case 2:
@@ -95,6 +96,29 @@ func (c *Client) Run() {
 			break
 		}
 	}
+}
+
+func (c *Client) PublicChat() {
+	var chatMsg string
+	//提示用户输入消息
+	fmt.Println(">>>>>>>请输入聊天内容，exit退出")
+	fmt.Scanln(&chatMsg)
+
+	for chatMsg != "exit" {
+		if len(chatMsg) != 0 {
+			sendMsg := chatMsg + "\n"
+			_, err := c.conn.Write([]byte(sendMsg))
+			if err != nil {
+				fmt.Println(err)
+				break
+			}
+		}
+
+		chatMsg = ""
+		fmt.Println(">>>>>>>请输入聊天内容，exit退出")
+		fmt.Scanln(&chatMsg)
+	}
+	//发送给服务器
 }
 
 func (c *Client) DealResponse() {
