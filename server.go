@@ -90,7 +90,7 @@ func (s *Server) Handler(conn net.Conn) {
 		case <-isLive:
 			//当前用户是活跃的，应该重置定时器
 
-		case <-time.After(time.Second * 5):
+		case <-time.After(time.Second * 200):
 			//说明已经超时
 			user.SendMessage("你被踢了\n")
 			//将当前的User强制关闭
